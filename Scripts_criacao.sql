@@ -532,11 +532,15 @@ monitoramento é inserido.
 CREATE OR REPLACE FUNCTION atualizar_status_plantao()
 RETURNS TRIGGER AS $$
 BEGIN
--- Atualiza o status de plantão para o funcionário associado
-UPDATE FUNCIONARIO
-SET EM_PLANTAO = TRUE
-WHERE COD_FUNCIONARIO = NEW.COD_FUNCIONARIO;
-RETURN NEW;
+    -- Atualiza o status do funcionário para "em plantão"
+    UPDATE FUNCIONARIO
+    SET EM_PLANTAO = TRUE
+    WHERE COD_FUNCIONARIO IN (
+        SELECT COD_FUNCIONARIO
+        FROM USUARIO
+        WHERE CPF = NEW.ID_USUARIO
+    );
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 CREATE TRIGGER trigger_atualizar_status_plantao

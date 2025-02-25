@@ -571,32 +571,24 @@ EXECUTE FUNCTION inserir_registro_monitoramento();
 
 --Trigger para Atualizar Status de Câmera
 --Descrição: Atualiza o status de uso de uma câmera para "inativa" quando ela não tem
-eventos registrados por um período especificado.
+--eventos registrados por um período especificado.
 
-CREATE OR REPLACE FUNCTION atualizar_status_camera()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION atualizar_status_cameras_inativas()
+RETURNS VOID AS $$
 BEGIN
--- Verifica se a câmera não registrou eventos nos últimos 30 dias
-IF NOT EXISTS (
-SELECT 1
-FROM CAMERA_EVENTO CE
-WHERE CE.ID_CAMERA = NEW.ID_CAMERA
-AND CE.DATA_DE_EVENTO >= NOW() - INTERVAL '30 days'
-) THEN
--- Atualiza o status da câmera para inativa
-UPDATE CAMERA
-SET STATUS = 'Inativa'
-WHERE ID_CAMERA = NEW.ID_CAMERA;
-END IF;
-RETURN NEW;
+    -- Atualiza câmeras que não registraram eventos nos últimos 30 dias
+    UPDATE CAMERA
+    SET STATUS = 'Inativa'
+    WHERE ID_CAMERA NOT IN (
+        SELECT DISTINCT ID_CAMERA
+        FROM CAMERA_EVENTO
+        WHERE DATA_DE_EVENTO >= NOW() - INTERVAL '30 days'
+    );
 END;
 $$ LANGUAGE plpgsql;
-CREATE TRIGGER trigger_atualizar_status_camera
-AFTER INSERT ON CAMERA_EVENTO
-FOR EACH ROW
-EXECUTE FUNCTION atualizar_status_camera();
-SCRIPTS BD2 ATUALIZADO.txt
-Exibindo SCRIPTS BD2 ATUALIZADO.txt.
+
+SELECT atualizar_status_cameras_inativas();
+
 
 
 --- inidices ---- 

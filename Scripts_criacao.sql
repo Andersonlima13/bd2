@@ -430,6 +430,22 @@ RETURN total_eventos;
 END;
 $$ LANGUAGE plpgsql;
 
+
+--- USO COM BLOCO ANONIMO
+DO $$ 
+DECLARE 
+    resultado INT;
+BEGIN
+    resultado := total_eventos_por_camera(1); 
+    RAISE NOTICE 'Total de eventos registrados pela câmera: %', resultado;
+END $$;
+
+
+
+
+
+
+
 ---Função de uso exemplo
 
 ---Função com AVG e MIN
